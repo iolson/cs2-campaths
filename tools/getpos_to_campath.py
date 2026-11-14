@@ -24,6 +24,9 @@ Examples:
     # Lines from a text file (one getpos line per row), 12 second path
     python3 tools/getpos_to_campath.py -d 12 -i points.txt -o de_nuke/a-site-flyby-short.xml
 
+    # Same points flown backwards (end to start)
+    python3 tools/getpos_to_campath.py --reverse -i points.txt -o de_nuke/a-site-flyby-reverse.xml
+
     # No lines given: prompts for them one at a time
     python3 tools/getpos_to_campath.py -o de_nuke/a-site-flyby.xml
 
@@ -210,6 +213,8 @@ def main():
     parser.add_argument("--spacing", choices=["distance", "even"], default="distance",
                         help="'distance' times keyframes for a steady camera speed, "
                              "'even' splits the duration equally (default: distance)")
+    parser.add_argument("-r", "--reverse", action="store_true",
+                        help="fly the points in reverse order (last point first)")
     parser.add_argument("-f", "--force", action="store_true", help="overwrite an existing output file")
     args = parser.parse_args()
 
@@ -228,6 +233,10 @@ def main():
         args.fov = args.fov * len(points)
     elif len(args.fov) != len(points):
         parser.error(f"give one FOV or {len(points)} comma-separated FOVs (one per point), got {len(args.fov)}")
+    if args.reverse:
+        # FOVs are listed in input order, so they flip with their points.
+        points.reverse()
+        args.fov.reverse()
 
     unwrap_yaw(points)
     times = keyframe_times(points, args.duration, args.start, args.spacing)
