@@ -23,3 +23,7 @@ label = "Behind Fence Truck Looking A Site"
 [a-truck-b-rotation-catwalk]
 getpos = "setpos -1084.498535 1456.445190 1993.426147;setang 16.385044 -39.412827 0.000000"
 label = "A Truck Watching B Rotation and Catwalk"
+
+[mid-boost-looking-mid]
+getpos = "setpos 1046.53 609.48 2089.77;setang 35.60 -158.63 0.00"
+lable = "Mid Boost from T Side looking Mid"
