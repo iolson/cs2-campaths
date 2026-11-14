@@ -10,18 +10,21 @@ Give this script four of those lines (start, two middle points, end) and it
 writes a campath XML file that `mirv_campath load` accepts. HLAE smooths the
 path between the keyframes, so four points are enough for a clean shot.
 
+Paths default to 20 seconds. The script prints the camera speed and warns when
+the length or speed is far from what suits cs2-highlights-maker clips.
+
 Examples:
 
-    # Lines as arguments, 6 second path, written into the map directory
-    python3 tools/getpos_to_campath.py -d 6 -o de_nuke/a-site-flyby.xml \\
+    # Lines as arguments, default 20 second path, written into the map directory
+    python3 tools/getpos_to_campath.py -o de_nuke/a-site-flyby.xml \\
         "setpos ...;setang ..." "setpos ...;setang ..." \\
         "setpos ...;setang ..." "setpos ...;setang ..."
 
-    # Lines from a text file (one getpos line per row)
-    python3 tools/getpos_to_campath.py -d 6 -i points.txt -o de_nuke/a-site-flyby.xml
+    # Lines from a text file (one getpos line per row), 12 second path
+    python3 tools/getpos_to_campath.py -d 12 -i points.txt -o de_nuke/a-site-flyby-short.xml
 
     # No lines given: prompts for them one at a time
-    python3 tools/getpos_to_campath.py -d 6 -o de_nuke/a-site-flyby.xml
+    python3 tools/getpos_to_campath.py -o de_nuke/a-site-flyby.xml
 
 Only the Python standard library is used.
 """
@@ -33,6 +36,15 @@ import sys
 from pathlib import Path
 
 POINT_COUNT = 4
+
+# cs2-highlights-maker never stretches a path to fit a clip: a longer path is cut
+# off, a shorter one stops early. Clips are lead-in 4s + action + lead-out 3s, and
+# reference packs sit around 20-25s at a slow drift, so warn outside these ranges.
+DEFAULT_DURATION = 20.0
+SHORT_DURATION = 8.0  # seconds; shorter paths end before most clips do
+LONG_DURATION = 30.0  # seconds; the end of longer paths rarely gets played
+SLOW_SPEED = 10.0  # units per second; slower barely reads as movement
+FAST_SPEED = 100.0  # units per second; faster looks rushed (walking is 250)
 
 NUMBER = r"(-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?)"
 SETPOS_RE = re.compile(r"setpos(?:_exact)?\s+" + r"\s+".join([NUMBER] * 3))
@@ -110,6 +122,25 @@ def keyframe_times(points, duration, start, spacing):
     return times
 
 
+def path_length(points):
+    return sum(a.distance_to(b) for a, b in zip(points, points[1:]))
+
+
+def pacing_warnings(duration, speed):
+    """Warnings for a path whose length or speed suits highlight clips poorly."""
+    warnings = []
+    if duration < SHORT_DURATION:
+        warnings.append(f"{duration:g}s is short: most clips run longer, so the camera will stop early")
+    elif duration > LONG_DURATION:
+        warnings.append(f"{duration:g}s is long: clips rarely run this long, so the end will be cut off")
+    # A path that only turns in place has no speed to judge.
+    if 0 < speed < SLOW_SPEED:
+        warnings.append(f"{speed:.0f} units/s is very slow: shorten -d or spread the points out")
+    elif speed > FAST_SPEED:
+        warnings.append(f"{speed:.0f} units/s is fast: lengthen -d or move the points closer")
+    return warnings
+
+
 def build_campath(points, times, fovs):
     lines = [HEADER]
     previous = None
@@ -163,8 +194,9 @@ def main():
     parser.add_argument("lines", nargs="*", help="four getpos lines, in path order")
     parser.add_argument("-i", "--input", help="file with getpos lines, one per row ('-' for stdin)")
     parser.add_argument("-o", "--output", help="campath file to write (default: print to stdout)")
-    parser.add_argument("-d", "--duration", type=float, required=True,
-                        help="length of the path in seconds")
+    parser.add_argument("-d", "--duration", type=float, default=DEFAULT_DURATION,
+                        help=f"length of the path in seconds (default: {DEFAULT_DURATION:g}, "
+                             f"best kept within {SHORT_DURATION:g}-{LONG_DURATION:g})")
     parser.add_argument("-s", "--start", type=float, default=0.0,
                         help="time of the first keyframe in seconds (default: 0)")
     parser.add_argument("--fov", type=parse_fovs, default=parse_fovs("90"),
@@ -190,16 +222,22 @@ def main():
     unwrap_yaw(points)
     times = keyframe_times(points, args.duration, args.start, args.spacing)
     xml = build_campath(points, times, args.fov)
+    length = path_length(points)
+    speed = length / args.duration
+    summary = f"{POINT_COUNT} keyframes, {args.duration:g}s, {length:.0f} units, {speed:.0f} units/s"
 
-    if not args.output:
+    if args.output:
+        out = Path(args.output)
+        if out.exists() and not args.force:
+            parser.error(f"{out} already exists (use --force to overwrite, or add a -v2 suffix)")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(xml)
+        print(f"Wrote {out} ({summary})", file=sys.stderr)
+    else:
         sys.stdout.write(xml)
-        return
-    out = Path(args.output)
-    if out.exists() and not args.force:
-        parser.error(f"{out} already exists (use --force to overwrite, or add a -v2 suffix)")
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(xml)
-    print(f"Wrote {out} ({POINT_COUNT} keyframes, {args.duration:g}s)", file=sys.stderr)
+        print(f"Campath: {summary}", file=sys.stderr)
+    for warning in pacing_warnings(args.duration, speed):
+        print(f"Warning: {warning}", file=sys.stderr)
 
 
 if __name__ == "__main__":

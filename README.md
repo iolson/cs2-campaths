@@ -180,23 +180,40 @@ one from four camera positions. It only needs Python 3, with no extra packages.
    setpos 1234.000000 -567.000000 128.031250;setang 12.345678 90.000000 0.000000
    ```
 3. Do the same for two points along the way and one where the shot ends.
-4. Generate the campath, giving the length of the shot in seconds:
+4. Generate the campath:
    ```
-   python3 tools/getpos_to_campath.py -d 6 -o de_nuke/a-site-flyby.xml
+   python3 tools/getpos_to_campath.py -o de_nuke/a-site-flyby.xml
    ```
    With no lines on the command line, it asks you to paste each one. You can also
    pass the four lines as arguments, or put them in a text file and use `-i points.txt`.
+   The path is 20 seconds unless you pass `-d`. The script prints the camera speed and
+   warns when the length or speed is outside the ranges below.
 
 Useful options:
 
 | Option              | What it does                                                                      |
 | ------------------- | --------------------------------------------------------------------------------- |
-| `-d`, `--duration`  | Length of the path in seconds (required).                                         |
+| `-d`, `--duration`  | Length of the path in seconds. Defaults to `20`.                                  |
 | `-s`, `--start`     | Time of the first keyframe, in seconds. Defaults to `0`.                          |
 | `--fov`             | FOV for every point (`--fov 70`) or one per point (`--fov 90,80,75,70`). Defaults to `90`. |
 | `--spacing`         | `distance` (default) keeps the camera at a steady speed; `even` gives each leg the same time. |
 | `-o`, `--output`    | File to write. Without it, the campath prints to the terminal.                    |
 | `-f`, `--force`     | Overwrite an existing file.                                                       |
+
+#### How long should a path be?
+
+Aim for about **20 seconds**, and keep paths between **8 and 30 seconds**.
+`cs2-highlights-maker` never speeds a path up or slows it down to fit a clip: it can
+only start it late or hold the last frame. A path longer than the clip is cut off, so
+its ending never plays, and a shorter one stops before the clip ends. Clips are 4
+seconds of lead-in, the action, then 3 seconds of lead-out, so even a single kill runs
+about 7 seconds, and multi-kills and clutches run longer. For short single-kill shots,
+add a separate short take (for example `a-site-flyby-short.xml`, around 8 to 12 seconds).
+
+Keep the camera to a slow drift, roughly **10 to 100 units per second** (walking is
+250). A reference pack of 153 paths has a median of 23 seconds at about 33 units per
+second. If the script warns that a path is too fast, give it a longer `-d` or put the
+points closer together.
 
 Load the result with `mirv_campath load` and check it plays well before you submit it.
 The same `getpos` vs `getpos_exact` caveat as for fixed cameras applies (see
