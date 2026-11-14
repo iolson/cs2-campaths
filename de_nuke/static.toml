@@ -1,0 +1,37 @@
+# Fixed cameras for --static-cam (see "static.toml: fixed cameras" in the README).
+
+[trophy-ramp]
+getpos = "setpos -6.575313 -614.252808 -363.096252;setang 3.253842 65.720238 0.000000"
+label = "Trophy Looking Ramp"
+
+[lobby-ceiling-hut-squeaky]
+getpos = "setpos -250.084244 -713.901123 -253.568207;setang 18.200567 -44.356407 0.000000"
+label = "Lobby Ceiling Look at Hut/Squeaky"
+
+[deep-squeaky]
+getpos = "setpos -250.343781 -1338.057861 -328.685608;setang 10.670228 30.794022 0.000000"
+label = "Deep Squeaky"
+
+[mini-ground-a-site-heaven]
+getpos = "setpos 568.007202 -1667.114868 -402.561005;setang -14.796057 67.289062 0.000000"
+label = "Mini Ground Looking A Site/Heaven"
+
+[upper-site-above-asia]
+getpos = "setpos 915.363953 -1432.105469 -152.639679;setang 16.100294 127.045685 0.000000"
+label = "Upper Site Above Asia"
+
+[ct-spawn-stairs-mini-hell]
+getpos = "setpos 1810.993896 -463.679749 -293.740875;setang 7.132449 -151.087051 0.000000"
+label = "CT Spawn Stairs Looking at Mini and Hell"
+
+[top-big-garage-outside-mini-ct]
+getpos = "setpos 1335.401123 -2084.080078 -162.779541;setang 20.962992 135.256302 0.000000"
+label = "Top Big Garage Entrance Looking at Outside/Mini/CT"
+
+[big-garage-outside-mini]
+getpos = "setpos 1496.468506 -2032.498535 -375.897186;setang -10.690306 148.803009 0.000000"
+label = "Big Garage Entrance Looking Outside/Mini"
+
+[outside-behind-red-fence]
+getpos = "setpos 1148.954468 -2711.487793 -323.171997;setang 4.294869 117.529343 0.000000"
+label = "Outside Behind Red Fence"

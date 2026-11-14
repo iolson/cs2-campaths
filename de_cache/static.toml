@@ -1,0 +1,25 @@
+# Fixed cameras for --static-cam (see "static.toml: fixed cameras" in the README).
+
+[ct-spawn-1]
+getpos = "setpos -1770.776123 -292.699402 1837.864502;setang 8.931105 42.274147 0.000000"
+label = "CT Spawn (1)"
+
+[ct-spawn-2]
+getpos = "setpos -1658.688721 1035.420898 1733.229980;setang 7.531034 -65.361679 0.000000"
+label = "CT Spawn (2)"
+
+[ct-spawn-3]
+getpos = "setpos -1696.164673 307.686798 1634.871094;setang -5.315703 31.300016 0.000000"
+label = "CT Spawn (3)"
+
+[a-site-outside-fence]
+getpos = "setpos 52.668812 2365.035889 1821.742065;setang 10.557668 -119.132637 0.000000"
+label = "A Site, Outside Fence"
+
+[behind-fence-truck-a-site]
+getpos = "setpos -1107.971069 1017.114563 1718.899292;setang -6.186240 29.323437 0.000000"
+label = "Behind Fence Truck Looking A Site"
+
+[a-truck-b-rotation-catwalk]
+getpos = "setpos -1084.498535 1456.445190 1993.426147;setang 16.385044 -39.412827 0.000000"
+label = "A Truck Watching B Rotation and Catwalk"
