@@ -172,20 +172,22 @@ Contributions are welcome, for any of the maps above.
 ### Building a campath from `getpos`
 
 If you would rather not record a path by hand, `tools/getpos_to_campath.py` builds
-one from four camera positions. It only needs Python 3, with no extra packages.
+one from four or more camera positions. It only needs Python 3, with no extra packages.
 
 1. Load a demo on the map and move to the spot where the shot should start.
 2. Run `getpos` in the console and copy the line it prints:
    ```
    setpos 1234.000000 -567.000000 128.031250;setang 12.345678 90.000000 0.000000
    ```
-3. Do the same for two points along the way and one where the shot ends.
+3. Do the same for at least two points along the way and one where the shot ends.
+   Four points is the minimum; there is no maximum, so add more for longer or curvier paths.
 4. Generate the campath:
    ```
    python3 tools/getpos_to_campath.py -o de_nuke/a-site-flyby.xml
    ```
-   With no lines on the command line, it asks you to paste each one. You can also
-   pass the four lines as arguments, or put them in a text file and use `-i points.txt`.
+   With no lines on the command line, it asks you to paste each one; after the fourth,
+   press Enter on a blank line to finish. You can also pass the lines as arguments, or
+   put them in a text file and use `-i points.txt`.
    The path is 20 seconds unless you pass `-d`. The script prints the camera speed and
    warns when the length or speed is outside the ranges below.
 
@@ -195,7 +197,7 @@ Useful options:
 | ------------------- | --------------------------------------------------------------------------------- |
 | `-d`, `--duration`  | Length of the path in seconds. Defaults to `20`.                                  |
 | `-s`, `--start`     | Time of the first keyframe, in seconds. Defaults to `0`.                          |
-| `--fov`             | FOV for every point (`--fov 70`) or one per point (`--fov 90,80,75,70`). Defaults to `90`. |
+| `--fov`             | FOV for every point (`--fov 70`) or one per point, in order (`--fov 90,80,75,70`). Defaults to `90`. |
 | `--spacing`         | `distance` (default) keeps the camera at a steady speed; `even` gives each leg the same time. |
 | `-o`, `--output`    | File to write. Without it, the campath prints to the terminal.                    |
 | `-f`, `--force`     | Overwrite an existing file.                                                       |

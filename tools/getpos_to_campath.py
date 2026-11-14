@@ -6,9 +6,10 @@ prints, which looks like:
 
     setpos 1234.000000 -567.000000 128.031250;setang 12.345678 90.000000 0.000000
 
-Give this script four of those lines (start, two middle points, end) and it
-writes a campath XML file that `mirv_campath load` accepts. HLAE smooths the
-path between the keyframes, so four points are enough for a clean shot.
+Give this script at least four of those lines (start, middle points, end) and
+it writes a campath XML file that `mirv_campath load` accepts. HLAE smooths the
+path between the keyframes, so four points are enough for a clean shot; add more
+for longer or curvier paths.
 
 Paths default to 20 seconds. The script prints the camera speed and warns when
 the length or speed is far from what suits cs2-highlights-maker clips.
@@ -35,7 +36,7 @@ import re
 import sys
 from pathlib import Path
 
-POINT_COUNT = 4
+MIN_POINTS = 4
 
 # cs2-highlights-maker never stretches a path to fit a clip: a longer path is cut
 # off, a shorter one stops early. Clips are lead-in 4s + action + lead-out 3s, and
@@ -169,29 +170,34 @@ def read_lines(args):
         return [l for l in text.splitlines() if "setpos" in l]
     if not sys.stdin.isatty():
         return [l for l in sys.stdin.read().splitlines() if "setpos" in l]
-    labels = ["start", "second", "third", "end"]
     lines = []
-    for label in labels:
-        lines.append(input(f"Paste getpos for the {label} point: "))
-    return lines
+    while True:
+        n = len(lines) + 1
+        if n == 1:
+            prompt = "Paste getpos for point 1 (start): "
+        elif n <= MIN_POINTS:
+            prompt = f"Paste getpos for point {n}: "
+        else:
+            prompt = f"Paste getpos for point {n} (blank line to finish): "
+        line = input(prompt).strip()
+        if not line:
+            if n > MIN_POINTS:
+                return lines
+            continue
+        lines.append(line)
 
 
 def parse_fovs(value):
-    fovs = [float(v) for v in value.split(",")]
-    if len(fovs) == 1:
-        return fovs * POINT_COUNT
-    if len(fovs) != POINT_COUNT:
-        raise argparse.ArgumentTypeError(f"give one FOV or {POINT_COUNT} comma-separated FOVs")
-    return fovs
+    return [float(v) for v in value.split(",")]
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate an HLAE campath from four CS2 getpos lines.",
+        description=f"Generate an HLAE campath from {MIN_POINTS} or more CS2 getpos lines.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Run with no getpos lines to be prompted for each one.",
     )
-    parser.add_argument("lines", nargs="*", help="four getpos lines, in path order")
+    parser.add_argument("lines", nargs="*", help=f"{MIN_POINTS} or more getpos lines, in path order")
     parser.add_argument("-i", "--input", help="file with getpos lines, one per row ('-' for stdin)")
     parser.add_argument("-o", "--output", help="campath file to write (default: print to stdout)")
     parser.add_argument("-d", "--duration", type=float, default=DEFAULT_DURATION,
@@ -200,7 +206,7 @@ def main():
     parser.add_argument("-s", "--start", type=float, default=0.0,
                         help="time of the first keyframe in seconds (default: 0)")
     parser.add_argument("--fov", type=parse_fovs, default=parse_fovs("90"),
-                        help=f"FOV for every point, or {POINT_COUNT} comma-separated values (default: 90)")
+                        help="FOV for every point, or one comma-separated value per point (default: 90)")
     parser.add_argument("--spacing", choices=["distance", "even"], default="distance",
                         help="'distance' times keyframes for a steady camera speed, "
                              "'even' splits the duration equally (default: distance)")
@@ -216,15 +222,19 @@ def main():
         parser.error(str(e))
     except (EOFError, KeyboardInterrupt):
         sys.exit(1)
-    if len(points) != POINT_COUNT:
-        parser.error(f"expected {POINT_COUNT} getpos lines, got {len(points)}")
+    if len(points) < MIN_POINTS:
+        parser.error(f"expected at least {MIN_POINTS} getpos lines, got {len(points)}")
+    if len(args.fov) == 1:
+        args.fov = args.fov * len(points)
+    elif len(args.fov) != len(points):
+        parser.error(f"give one FOV or {len(points)} comma-separated FOVs (one per point), got {len(args.fov)}")
 
     unwrap_yaw(points)
     times = keyframe_times(points, args.duration, args.start, args.spacing)
     xml = build_campath(points, times, args.fov)
     length = path_length(points)
     speed = length / args.duration
-    summary = f"{POINT_COUNT} keyframes, {args.duration:g}s, {length:.0f} units, {speed:.0f} units/s"
+    summary = f"{len(points)} keyframes, {args.duration:g}s, {length:.0f} units, {speed:.0f} units/s"
 
     if args.output:
         out = Path(args.output)
