@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<campath>
+	<points>
+		<!--Points are in Quake coordinates, meaning x=forward, y=left, z=up and rotation order is first rx, then ry and lastly rz.
+Rotation direction follows the right-hand grip rule.
+rx (roll), ry (pitch), rz(yaw) are the Euler angles in degrees.
+qw, qx, qy, qz are the quaternion values.
+When read it is sufficient that either rx, ry, rz OR qw, qx, qy, qz are present.
+If both are present then qw, qx, qy, qz take precedence.-->
+		<p t="0.000000" x="-2006.800000" y="1071.920000" z="324.410000" fov="90.000000" rx="0.000000" ry="30.480000" rz="-10.040000" qw="0.961132" qx="0.023001" qy="0.261855" qz="-0.084426"/>
+		<p t="8.735479" x="-1931.290000" y="692.760000" z="324.410000" fov="90.000000" rx="0.000000" ry="30.600000" rz="24.910000" qw="0.941857" qx="-0.056910" qy="0.257663" qz="0.208029"/>
+		<p t="12.323687" x="-1802.120000" y="600.700000" z="316.760000" fov="90.000000" rx="0.000000" ry="27.040000" rz="38.780000" qw="0.917141" qx="-0.077616" qy="0.220525" qz="0.322796"/>
+		<p t="20.000000" x="-1540.780000" y="800.830000" z="400.820000" fov="90.000000" rx="0.000000" ry="38.620000" rz="16.320000" qw="0.934188" qx="-0.046936" qy="0.327331" qz="0.133953"/>
+	</points>
+</campath>
