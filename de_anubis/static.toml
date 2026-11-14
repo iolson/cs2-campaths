@@ -1,0 +1,5 @@
+# Fixed cameras for --static-cam (see "static.toml: fixed cameras" in the README).
+
+[b-site-overlook-above-ebox]
+getpos = "setpos -933.38 282.79 446.07;setang 51.80 129.64 0.00"
+label = "B Site Overlook Above Ebox"
